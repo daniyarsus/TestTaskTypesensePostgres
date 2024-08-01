@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: test_task_app_container
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - typesense
+
+  postgres:
+    container_name: test_task_postgres_container
+    image: postgres:latest
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASS}
+      POSTGRES_DB: ${POSTGRES_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+  typesense:
+    container_name: test_task_typesense_container
+    image: typesense/typesense:0.23.1
+    environment:
+      TYPESENSE_DATA_DIR: /data
+      TYPESENSE_API_KEY: ${TYPESENSE_API_KEY}
+      TYPESENSE_ENABLE_CORS: "true"
+    ports:
+      - "${TYPESENSE_PORT}:8108"
+    volumes:
+      - typesense_data:/data
+
+volumes:
+  postgres_data:
+  typesense_data:
